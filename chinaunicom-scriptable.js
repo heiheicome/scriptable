@@ -3,12 +3,9 @@
  * 中国联通信息展示和自动签到
  * 模拟从手机端打开，防止cookie过期的问题
  * 
- * 
+ * 2022-11-30 11:24:26
  *
  */
-
-
-
 
 const files = FileManager.local();
 /**
@@ -17,22 +14,43 @@ const files = FileManager.local();
  * 为方便多手机号使用多个组件 则多复制脚本
  */
 
+// 格式化时间 
+Date.prototype.Format = function(fmt) { //author: meizz
+    let o = {
+        "M+": this.getMonth() + 1, //月份
+        "d+": this.getDate(), //日
+        "h+": this.getHours(), //小时
+        "m+": this.getMinutes(), //分
+        "s+": this.getSeconds(), //秒
+        "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+        "S": this.getMilliseconds() //毫秒
+    };
+    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (let k in o)
+        if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (
+            ("00" + o[k]).substr(("" + o[k]).length)));
+    return fmt;
+}
+
+
+var onlineTime = new Date().Format('yyyy-MM-dd hh:mm:ss');//2022-11-29 08:58:57
+var onlineBody = ''
 
 let conf = {
-  /** 手机号 */
-  phone: '',
-  /** m.client.10010.com API cookie */
-  clientCookie: '', /** act.10010.com API cookie  */
-  actionCookie: ''
+  phone: '', /** 手机号 */
+  clientCookie: '',/** m.client.10010.com API cookie */
+  actionCookie: '',/** act.10010.com API cookie  */
+  onlineCookie: '',//onLine_url
 };
 const Tel = conf.phone;
 //ua001，ua002  一定要修改成自己的  这也就是为什么你的cookie没几天就过期，以及为什么不能打开联通app的原因
 const ua001 = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 unicom{version:iphone_c@9.0201}';//act.10010.com
 const ua002 = 'ChinaUnicom.x CFNetwork iOS/16.1 unicom{version:iphone_c@9.0201}';//m.client.10010.com
 const URL_yours = 'https://m.client.10010.com/mobileserviceimportant/home/queryUserInfoSeven?version=iphone_c@9.0201&desmobiel=' + Tel + '&showType=0';
-const ON_line_url = ''
+const onLine_url = 'https://m.client.10010.com/mobileService/onLine.htm'
 const clientCookie = conf.clientCookie;
 const Cookie = conf.actionCookie;
+const onlineCookie = conf.onlineCookie;
 const ringStackSize = 61; // 圆环大小
 const ringTextSize = 11; // 圆环中心文字大小
 const creditTextSize = 13; // 话费文本大小
@@ -44,8 +62,6 @@ const datafgColor = new Color('22976B'); // 流量环前景颜色
 const dataTextColor = Color.dynamic(Color.black(), Color.white());
 const voicebgColor = new Color('F86527', 0.3); // 语音环背景颜色
 const voicefgColor = new Color('F86527'); // 语音环前景颜色
-//混淆  
-
 
 
 const dataSfs = SFSymbol.named('antenna.radiowaves.left.and.right');
@@ -58,6 +74,28 @@ const canvRadius = 80;
 const widget = new ListWidget();
 // widget.url = 'chinaunicom://';
 widget.setPadding(16, 16, 16, 16);
+
+/***********onLine****************/
+const onLine = async () => {
+  const headers = {
+    'User-Agent': ua002
+  };
+  // const url = 'http://192.168.123.5/june';
+  const req = new Request(onLine_url);
+  req.method = 'POST';
+  req.headers = {
+    ...headers,
+    cookie: onlineCookie
+  };
+  req.body = onlineBody
+  try{
+    const data = await req.loadJSON();
+    console.log('登陆成功')
+  }catch(e){
+    console.log('登陆失败')
+  }
+
+};
 
 
 
@@ -93,6 +131,8 @@ const getImage = async (url) => {
 };
 
 const render = async () => {
+  // 模拟打开手机app
+  const online = await onLine()
   const data = await getData();
   const mlData = await get_mlData();
   /** [话费, 流量, 语音] */
