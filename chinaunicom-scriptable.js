@@ -15,7 +15,7 @@ const files = FileManager.local();
  */
 
 // 格式化时间 
-Date.prototype.Format = function(fmt) { //author: meizz
+Date.prototype.Format = function(fmt) { 
     let o = {
         "M+": this.getMonth() + 1, //月份
         "d+": this.getDate(), //日
@@ -239,7 +239,7 @@ const renderArcs = async (flowData, voiceData) => {
        if(flowData.unit.match(/MB/g)){//  如果返回的单位MB 
          var dataGap = (mmm/my_flow * 100 )* 3.6;
        }else{//如果返回 单位 GB   转换成mb
-         console.log('返回的是gb')
+         console.log('返回的单位是 GB')
           var dataGap = (mmm*1024/my_flow * 100 )* 3.6;
           console.log(dataGap)
        }
